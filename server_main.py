@@ -1,17 +1,25 @@
 import socket, threading, pygame,sys
 
+ip = socket.gethostbyname(socket.gethostname())
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
 port = 19131
-sock.bind(("192.168.68.122", port))
+sock.bind((ip, port))
 sock.listen(5)
 
-print(f"The ip of this server is: {socket.gethostname()}")
+print(f"The ip of this server is: {ip}")
 Debounce = False
+
+MovingUp = False
+MovingLeft = False
+MovingDown = False
+MoveingRight = False
+
 
 clients = []
 
 def MovementControls():
-    global Debounce
+    global Debounce, MovingDown, MovingLeft, MovingRight, MovingUp
 
     class Tile(pygame.sprite.Sprite):
         def __init__(self, pos,size,color):
@@ -52,11 +60,31 @@ def MovementControls():
             if sprite.rect.collidepoint(mouse_x, mouse_y):
                 if pygame.mouse.get_pressed()[0]:
                     if not Debounce:
-                        broadcast("MoveUp")
-                        Debounce = True
+                        if sprite.rect.topleft == (75,10):
+                            broadcast("MoveUp")
+                            MovingUp = True
+                            Debounce = True
+                        elif sprite.rect.topleft == (10,10):
+                            broadcast("MoveLeft")
+                            broadcast("MoveUp")
+                            MovingUp = True
+                            MovingLeft = True
+                        else:
+                            print(sprite.rect.topleft)
                 else:
                     if Debounce:
-                        broadcast("MoveUp")
+                        if MovingDown:
+                            broadcast("MoveDown")
+                            MovingDown = False
+                        if MovingLeft:
+                            broadcast("MoveLeft")
+                            MovingLeft = False
+                        if MovingUp:
+                            MovingUp = False
+                            broadcast("MoveUp")
+                        if MovingDown:
+                            broadcast("MoveDown")
+                            MovingDown = False
                         Debounce = False
 
         MovementTiles.draw(screen)
