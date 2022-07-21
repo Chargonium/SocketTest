@@ -5,7 +5,9 @@ ip = socket.gethostbyname(socket.gethostname())
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
 port = 19131
 sock.bind((ip, port))
-sock.listen(5)
+sock.listen()
+
+WelcomeMessage = "Welcome!"
 
 print(f"The ip of this server is: {ip}")
 Debounce = False
@@ -69,6 +71,32 @@ def MovementControls():
                             broadcast("MoveUp")
                             MovingUp = True
                             MovingLeft = True
+                        elif sprite.rect.topleft == (140,10):
+                            MovingRight = True
+                            MovingUp = True
+                            broadcast("MoveUp")
+                            broadcast("MoveRight")
+                        elif sprite.rect.topleft == (10, 75):
+                            MovingLeft = True
+                            broadcast("MoveLeft")
+                        elif sprite.rect.topleft == (140, 75):
+                            MovingRight = True
+                            broadcast("MoverIGHT")
+                        elif sprite.rect.topleft == (10,140):
+                            MovingLeft = True
+                            MovingDown = True
+                            broadcast("MoveDown")
+                            broadcast("MoveLeft")
+                        elif sprite.rect.topleft == (75, 140):
+                            MovingDown = True
+                            broadcast("MovingDown")
+                        elif sprite.rect.topleft == (140,140):
+                            MovingRight = True
+                            MovingDown = True
+                            broadcast("MoveDown")
+                            broadcast("MoveRight")
+                        elif sprite.rect.topleft == (75,75):
+                            broadcast("Click")
                         else:
                             print(sprite.rect.topleft)
                 else:
@@ -97,6 +125,7 @@ def broadcast(Message = ''):
         client.send(Message.encode())
 
 def handle(client, adress):
+    client.send(WelcomeMessage.encode())
     while True:
         try:
             print(client.recv(1024).decode())
@@ -114,14 +143,30 @@ def client_joining():
         handling.start()
 
 def send_message():
+    global WelcomeMessage
     print("What do you want to broadcast?")
     while True:
         message = input("")
-        broadcast(message)
+        if message.lower().startswith('!'):
+            if message.lower().endswith('?'):
+                MessageTwo = message.removeprefix('!')
+                MessageTwo = MessageTwo.removesuffix('?')
+                MessageTwo = MessageTwo.lower()
+                if MessageTwo.startswith('welcomemessage'):
+                    MessageThree = MessageTwo.removeprefix('welcomemessage')
+                    WelcomeMessage = MessageThree.removeprefix(' ')
+                    print(WelcomeMessage)
+                else:
+                    broadcast(message)
+            else:
+                broadcast(message)
+        else:
+            broadcast(message)
+        
     
 joining_thread = threading.Thread(target=client_joining,name="Joining_thread")
 message_thread = threading.Thread(target=send_message,name="messaging_thread")
-pygame_window_thread = threading.Thread(target=MovementControls)
+pygame_window_thread = threading.Thread(target=MovementControls,name="Movement_Controls")
 
 joining_thread.start()
 pygame_window_thread.start()

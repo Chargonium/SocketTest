@@ -10,6 +10,9 @@ MovingDown = False
 
 ip = input("What is the ip of the server you want to connect to? ")
 
+if ip.lower() == "local" or ip.lower() == "localhost" or ip.lower() == "127.0.0.1":
+    ip = socket.gethostbyname(socket.gethostname())
+
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
 port = 19131
 try:
@@ -45,6 +48,9 @@ def recieve():
                     MovingDown = False
                 else:
                     MovingDown = True
+            elif Message.lower() == "click":
+                mouse.click()
+                sock.send("Clicked!".encode())
             else:
                 print(Message)
         except ConnectionResetError as error:
